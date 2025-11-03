@@ -1,31 +1,22 @@
-from together import Together
-import os
-
-client = Together(
-    api_key=os.getenv('API_KEY')
-)
-
-with open("prompt.txt", 'r', encoding='utf-8') as mood_file:
-    prompt = mood_file.read()
-
-history = [{"role": "system", "content": prompt}]
+# Super simple example usage
+from together_socket import TogetherClient
 
 
-while True:
-    response = client.chat.completions.create(
-        model="meta-llama/Llama-3.3-70B-Instruct-Turbo-Free",
-        messages=history
-    )
+def main():
+    # Initialize TogetherClient with a model id, temperature, and empty
+    # conversation history
+    adapter = TogetherClient()
 
-    print(response.choices[0].message.content)
+    adapter.add_system_message("You are a concise helpful assistant.")
 
-    history.append({
-        "role": "assistant",
-        "content": response.choices[0].message.content
-    })
+    # The new TogetherClient does not support per-thread storage in this
+    # wrapper, so we include the author in the message content if desired.
+    while True:
+        user_message = input("User: ")
+        adapter.add_user_message(user_message)
+        reply = adapter.generate_response()
+        print("AI: ", reply)
 
-    user_input = input("You: ")
-    history.append({
-        "role": "user",
-        "content": user_input
-    })
+
+if __name__ == "__main__":
+    main()
